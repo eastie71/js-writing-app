@@ -1,3 +1,7 @@
+const dotenv = require('dotenv')
+// Load Env Vars from the .env file
+dotenv.config()
+
 const mongodb = require('mongodb')
 let connectionString
 let local_db
@@ -6,7 +10,7 @@ if (process.env.NODE_ENV == "development") {
 } else {
     local_db = 'heroku connect string here'
 }
-let external_db = 'mongodb+srv://todoapp:craig123@cluster0-jyrjz.mongodb.net/WritingApp?retryWrites=true&w=majority'
+let external_db = process.env.CONNECTIONSTRING
 
 if (process.env.NODE_ENV == "development") {
     connectionString = local_db
@@ -16,5 +20,5 @@ if (process.env.NODE_ENV == "development") {
 mongodb.connect(connectionString,{useNewUrlParser: true, useUnifiedTopology: true},function(err, client) {
     module.exports = client.db()
     const app = require('./app')
-    app.listen(3000)
+    app.listen(process.env.PORT)
 })
