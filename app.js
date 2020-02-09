@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const router = require('./router')
 
 // Make the 'public' folder accessible by the browser
 app.use(express.static('public'))
@@ -8,8 +9,6 @@ app.set('views', 'views')
 // Set the Javascript template to be EJS
 app.set('view engine', 'ejs')
 
-app.get('/', function(req,res) {
-    res.render('home-guest')
-})
+app.use('/', router)
 
 app.listen(3000)
