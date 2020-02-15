@@ -1,6 +1,7 @@
 const express = require('express')
 const session1 = require('express-session')
 const MongoStore = require('connect-mongo')(session1)
+const flash = require('connect-flash')
 const app = express()
 
 // BOILERPLATE CODE for Session package
@@ -13,6 +14,9 @@ let sessionOptions = session1({
     cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true}
 })
 app.use(sessionOptions)
+
+// Install the flash package for flash messages
+app.use(flash())
 
 const router = require('./router')
 
