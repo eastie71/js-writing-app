@@ -1,5 +1,19 @@
 const express = require('express')
+const session1 = require('express-session')
+const MongoStore = require('connect-mongo')(session1)
 const app = express()
+
+// BOILERPLATE CODE for Session package
+let sessionOptions = session1({
+    secret: "I dont think you will ever guess this!!",
+    store: new MongoStore({client: require('./db')}),
+    resave: false,
+    saveUninitialized: false,
+    // maxAge is in milliseconds
+    cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true}
+})
+app.use(sessionOptions)
+
 const router = require('./router')
 
 // BOILERPLATE CODE

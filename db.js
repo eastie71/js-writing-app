@@ -18,7 +18,7 @@ if (process.env.NODE_ENV == "development") {
     connectionString = external_db
 }
 mongodb.connect(connectionString,{useNewUrlParser: true, useUnifiedTopology: true},function(err, client) {
-    module.exports = client.db()
+    module.exports = client
     const app = require('./app')
     app.listen(process.env.PORT)
 })

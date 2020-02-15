@@ -1,4 +1,5 @@
-const usersCollection = require('../db').collection("users")
+const bcrypt = require("bcryptjs")
+const usersCollection = require('../db').db().collection("users")
 const validator = require('validator')
 
 let User = function(data) {
@@ -11,10 +12,10 @@ User.prototype.cleanUpData = function() {
         this.data.username = ""
     }
     if (typeof(this.data.email) != "string") {
-        this.data.username = ""
+        this.data.email = ""
     }
     if (typeof(this.data.password) != "string") {
-        this.data.username = ""
+        this.data.password = ""
     }
     // Get rid of any rubbish properties in the data, and remove spaces
     // Convert username and email to all lowercase
@@ -47,8 +48,8 @@ User.prototype.validate = function() {
     if (this.data.password.length > 0 && this.data.password.length < 8) {
         this.errors.push("Passwords must be at least 8 characters in length")
     }
-    if (this.data.password.length > 100) {
-        this.errors.push("Passwords must no more than 100 characters in length")
+    if (this.data.password.length > 50) {
+        this.errors.push("Passwords must no more than 50 characters in length")
     }
 }
 
@@ -58,8 +59,29 @@ User.prototype.register = function() {
     this.validate()
     // Step 2 - Only if no validation errors occur then store user data into db
     if (!this.errors.length) {
+        // Hash the password
+        let salt = bcrypt.genSaltSync(10)
+        console.log(salt)
+        this.data.password = bcrypt.hashSync(this.data.password, salt)
+
         usersCollection.insertOne(this.data)
     }
+}
+
+User.prototype.login = function() {
+    // Need to use arrow function here so that the "this.data.password" is referring to the User object
+    return new Promise((resolve, reject) => {
+        this.cleanUpData()
+        usersCollection.findOne({username: this.data.username}).then((loginUser) => {
+            if (loginUser && bcrypt.compareSync(this.data.password, loginUser.password)) {
+                resolve("Login successful!")
+            } else {
+                reject("Invalid User/Password")
+            }
+        }).catch(function() {
+            reject("Login failed - please try again!")
+        })
+    })
 }
 
 module.exports = User
