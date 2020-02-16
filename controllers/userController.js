@@ -30,18 +30,19 @@ exports.logout = function(req, res) {
 
 exports.register = function(req, res) {
     let user = new User(req.body)
-    user.register()
-    if (user.errors.length) {
-        user.errors.forEach(function(error) {
+    user.register().then(() => {
+        // Successful register - so log the new user in.
+        req.session.user = {username: user.data.username}
+    }).catch((regErrors) => {
+        regErrors.forEach(function(error) {
             req.flash('regErrors', error)
         })
+    }).finally(() => {
         req.session.save(function() {
             // Make sure the session has been saved with flash info before redirecting to homepage
             res.redirect('/')
         })
-    } else {
-        res.send("Registration successful!")
-    }
+    })
 }
 
 exports.home = function(req, res) {
