@@ -3,7 +3,7 @@ const User = require('../models/User')
 exports.login = function(req, res) {
     let user = new User(req.body)
     user.login().then(function(result) {
-        req.session.user = {favColor: "red", username: user.data.username}
+        req.session.user = {avatar: user.avatar, username: user.data.username}
         // You do not have to explicitly call "save" method here - but we want to so that
         // we can pass a callback function (to redirect to homepage) AFTER the save is completed.
         req.session.save(function() {
@@ -32,7 +32,7 @@ exports.register = function(req, res) {
     let user = new User(req.body)
     user.register().then(() => {
         // Successful register - so log the new user in.
-        req.session.user = {username: user.data.username}
+        req.session.user = {avatar: user.avatar, username: user.data.username}
     }).catch((regErrors) => {
         regErrors.forEach(function(error) {
             req.flash('regErrors', error)
@@ -48,7 +48,7 @@ exports.register = function(req, res) {
 exports.home = function(req, res) {
     // If the "user" object exists on the session, then we must be logged in
     if (req.session.user) { 
-        res.render('home-dashboard', {username: req.session.user.username})
+        res.render('home-dashboard', {username: req.session.user.username, avatar: req.session.user.avatar})
     } else {
         // Here we leverage the flash package - accessing the "flash" object that contains 
         // "loginErrors" data if a user
