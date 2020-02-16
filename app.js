@@ -18,6 +18,12 @@ app.use(sessionOptions)
 // Install the flash package for flash messages
 app.use(flash())
 
+// Setup global access to session user data from every ejs templates
+app.use(function(req, res, next) {
+    res.locals.user = req.session.user
+    next()
+})
+
 const router = require('./router')
 
 // BOILERPLATE CODE
