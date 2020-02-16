@@ -15,7 +15,7 @@ exports.checkLoggedIn = function(req, res, next) {
 exports.login = function(req, res) {
     let user = new User(req.body)
     user.login().then(function(result) {
-        req.session.user = {avatar: user.avatar, username: user.data.username}
+        req.session.user = {avatar: user.avatar, username: user.data.username, _id: user.data._id}
         // You do not have to explicitly call "save" method here - but we want to so that
         // we can pass a callback function (to redirect to homepage) AFTER the save is completed.
         req.session.save(function() {
@@ -44,7 +44,7 @@ exports.register = function(req, res) {
     let user = new User(req.body)
     user.register().then(() => {
         // Successful register - so log the new user in.
-        req.session.user = {avatar: user.avatar, username: user.data.username}
+        req.session.user = {avatar: user.avatar, username: user.data.username, _id: user.data._id}
     }).catch((regErrors) => {
         regErrors.forEach(function(error) {
             req.flash('regErrors', error)

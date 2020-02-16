@@ -13,5 +13,7 @@ router.post('/logout', userController.logout)
 
 // express router calls methods from left to right and you use "next()" move to the next method
 router.get('/create-post', userController.checkLoggedIn, postController.createScreen)
+router.post('/create-post', userController.checkLoggedIn, postController.create)
+router.get('/post/:id', postController.viewSingle)
 
 module.exports = router
