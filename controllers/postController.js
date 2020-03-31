@@ -18,6 +18,6 @@ exports.viewSingle = async function(req, res) {
         let post = await Post.findById(req.params.id)
         res.render('single-post-screen', {post: post})
     } catch {
-        res.send("404 page not found goes here!")
+        res.render('404')
     }
 }

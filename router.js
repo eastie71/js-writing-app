@@ -14,6 +14,7 @@ router.post('/logout', userController.logout)
 // express router calls methods from left to right and you use "next()" move to the next method
 router.get('/create-post', userController.checkLoggedIn, postController.createScreen)
 router.post('/create-post', userController.checkLoggedIn, postController.create)
+// users that are NOT logged in can still view posts (hence not checking logged in here)
 router.get('/post/:id', postController.viewSingle)
 
 module.exports = router

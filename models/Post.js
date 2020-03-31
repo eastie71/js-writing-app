@@ -1,6 +1,7 @@
 const postsCollection = require('../db').db().collection("posts")
 // Special ObjectID type required for MongoDB IDs
 const ObjectID = require('mongodb').ObjectID
+const User = require('./User')
 
 let Post = function(data, userid) {
     this.data = data
@@ -58,9 +59,29 @@ Post.findById = function(id) {
             reject()
             return
         }
-        let post = await postsCollection.findOne({_id: new ObjectID(id)})
-        if (post) {
-            resolve(post)
+        let postArray = await postsCollection.aggregate([
+            {$match: {_id: new ObjectID(id)}},
+            {$lookup: {from: "users", localField: "author", foreignField: "_id", as: "authorDocument"}},
+            {$project: {
+                title: 1,
+                body: 1,
+                createdDate: 1,
+                author: {$arrayElemAt: ["$authorDocument", 0]}
+            }}
+        ]).toArray()
+
+        // cleanup author object in the post object
+        postArray = postArray.map(function(post) {
+            post.author = {
+                username: post.author.username,
+                avatar: new User(post.author, true).avatar
+            }
+            return post
+        })
+
+        if (postArray.length) {
+            console.log(postArray[0])
+            resolve(postArray[0])
         } else {
             reject()
         }
