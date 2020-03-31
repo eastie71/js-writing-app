@@ -122,4 +122,30 @@ User.prototype.setAvatar = function() {
     this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
 }
 
+User.findByUsername = function(username) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof(username) != "string") {
+            reject()
+            return
+        }
+        usersCollection.findOne({username: username}).then(function(user) {
+            user = new User(user, true)
+            user = {
+                _id: user.data._id, 
+                username: user.data.username,
+ //             email: user.data.email,
+                avatar: user.avatar
+            }
+            console.log(user)
+            if (user) {
+                resolve(user)
+            } else {
+                reject()
+            }
+        }).catch(function() {
+            reject()
+        })
+    })
+}
+
 module.exports = User

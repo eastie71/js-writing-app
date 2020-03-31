@@ -53,14 +53,10 @@ Post.prototype.create = function() {
     })
 }
 
-Post.findById = function(id) {
+Post.postQuery = function(operations) {
     return new Promise(async (resolve, reject) => {
-        if (typeof(id) != "string" || !ObjectID.isValid(id)) {
-            reject()
-            return
-        }
-        let postArray = await postsCollection.aggregate([
-            {$match: {_id: new ObjectID(id)}},
+        // Join the operations passed in for the aggregate method call
+        let aggOperations = operations.concat([
             {$lookup: {from: "users", localField: "author", foreignField: "_id", as: "authorDocument"}},
             {$project: {
                 title: 1,
@@ -68,9 +64,10 @@ Post.findById = function(id) {
                 createdDate: 1,
                 author: {$arrayElemAt: ["$authorDocument", 0]}
             }}
-        ]).toArray()
+        ])
+        let postArray = await postsCollection.aggregate(aggOperations).toArray()
 
-        // cleanup author object in the post object
+        // cleanup author object for each post object
         postArray = postArray.map(function(post) {
             post.author = {
                 username: post.author.username,
@@ -78,14 +75,35 @@ Post.findById = function(id) {
             }
             return post
         })
+        resolve(postArray)
+    })
+}
+
+Post.findById = function(id) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof(id) != "string" || !ObjectID.isValid(id)) {
+            reject()
+            return
+        }
+        
+        let postArray = await Post.postQuery([
+            {$match: {_id: new ObjectID(id)}}
+        ])
 
         if (postArray.length) {
-            console.log(postArray[0])
             resolve(postArray[0])
         } else {
             reject()
         }
     })
+}
+
+Post.findByAuthorId = function(authorId) {
+    return Post.postQuery([
+        {$match: {author: authorId}},
+        // sort in descending order (-1)
+        {$sort: {createdDate: -1}}
+    ])
 }
 
 module.exports = Post
