@@ -18,8 +18,20 @@ app.use(sessionOptions)
 // Install the flash package for flash messages
 app.use(flash())
 
-// Setup global access to session user data from every ejs templates
 app.use(function(req, res, next) {
+    // Make all general errors and success flash messages available from every ejs view templates
+    res.locals.generalErrors = req.flash("generalErrors")
+    res.locals.successMessages = req.flash("successMessages")
+
+    // Make current user id available on the req object
+    if (req.session.user) {
+        req.visitorId = req.session.user._id
+    } else {
+        // This is a guest user (not logged in)
+        req.visitorId = 0
+    }
+
+    // Setup global access to session user data from every ejs view templates
     res.locals.user = req.session.user
     next()
 })

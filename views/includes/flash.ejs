@@ -1,0 +1,18 @@
+<!-- Display any errors from the "generalErrors" array here. It may be an empty of course. -->
+<% generalErrors.forEach(function(message) { %>
+    <div class="alert alert-danger alert-dismissable fade show text-center">
+        <%= message %>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+<% }) %>
+<!-- Display any success messages here from the "successMessages" array here. It may be an empty of course. -->
+<% successMessages.forEach(function(message) { %>
+    <div class="alert alert-success alert-dismissable fade show text-center">
+        <%= message %>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+<% }) %>

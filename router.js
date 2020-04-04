@@ -18,5 +18,7 @@ router.get('/create-post', userController.checkLoggedIn, postController.createSc
 router.post('/create-post', userController.checkLoggedIn, postController.create)
 // users that are NOT logged in can still view posts (hence not checking logged in here)
 router.get('/post/:id', postController.viewSingle)
+router.get('/post/:id/edit', userController.checkLoggedIn, postController.editScreen)
+router.post('/post/:id/edit', userController.checkLoggedIn, postController.update)
 
 module.exports = router

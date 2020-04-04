@@ -87,7 +87,7 @@ User.prototype.register = function() {
         if (!this.errors.length) {
             // Hash the password
             let salt = bcrypt.genSaltSync(10)
-            console.log(salt)
+            // console.log(salt)
             this.data.password = bcrypt.hashSync(this.data.password, salt)
     
             await usersCollection.insertOne(this.data)
@@ -136,7 +136,7 @@ User.findByUsername = function(username) {
  //             email: user.data.email,
                 avatar: user.avatar
             }
-            console.log(user)
+            // console.log(user)
             if (user) {
                 resolve(user)
             } else {

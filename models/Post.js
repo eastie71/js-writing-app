@@ -3,10 +3,11 @@ const postsCollection = require('../db').db().collection("posts")
 const ObjectID = require('mongodb').ObjectID
 const User = require('./User')
 
-let Post = function(data, userid) {
+let Post = function(data, userid, requestPostId) {
     this.data = data
     this.errors = []
     this.userid = userid
+    this.requestPostId = requestPostId
 }
 
 Post.prototype.cleanUpData = function() {
@@ -41,8 +42,9 @@ Post.prototype.create = function() {
         this.validate()
         if (!this.errors.length) {
             // Save post into the database
-            postsCollection.insertOne(this.data).then(() => {
-                resolve()
+            postsCollection.insertOne(this.data).then((info) => {
+                // Resolve with the newly created id (Note: element 0 - because we are only creating ONE post)
+                resolve(info.ops[0]._id)
             }).catch(() => {
                 this.errors.push("Unexpected error occurred. Please try again.")
                 reject(this.errors)
@@ -53,7 +55,54 @@ Post.prototype.create = function() {
     })
 }
 
-Post.postQuery = function(operations) {
+Post.prototype.update = function() {
+    return new Promise(async (resolve, reject) => {
+        let status
+        try {
+            // As the "findById" returns a promise, if it rejects it will 
+            // automatically fall to the "catch" section below
+            let post = await Post.findById(this.requestPostId, this.userid)
+            if (post.isVisitorTheAuthor) {
+                // Logged in User matches the Posts User - so can perform update
+                this.performUpdate().then(()=> {
+                    resolve()
+                }).catch(() => {
+                    status = "failure"
+                    reject(status)
+                })            
+            } else {
+                status = "permission"
+                this.errors.push("Permission denied.")
+                reject(status)
+            } 
+        } catch {
+            // Post doesn't exist (or some other error) - just show permission denied error.
+            let status = "permission"
+            this.errors.push("Permission denied.")
+            reject(status)
+        }
+    })
+}
+
+Post.prototype.performUpdate = function() {
+    return new Promise(async (resolve, reject) => {
+        this.cleanUpData()
+        this.validate()
+        if (!this.errors.length) {
+            // Update post into the database
+            postsCollection.findOneAndUpdate({_id: new ObjectID(this.requestPostId)}, {$set: {title: this.data.title, body: this.data.body}}).then(() => {
+                resolve()
+            }).catch(() => {
+                this.errors.push("Unexpected error occurred. Please try again.")
+                reject()
+            })
+        } else {
+            reject()
+        }
+    })
+}
+
+Post.postQuery = function(operations, visitorId) {
     return new Promise(async (resolve, reject) => {
         // Join the operations passed in for the aggregate method call
         let aggOperations = operations.concat([
@@ -62,6 +111,7 @@ Post.postQuery = function(operations) {
                 title: 1,
                 body: 1,
                 createdDate: 1,
+                authorId: "$author",
                 author: {$arrayElemAt: ["$authorDocument", 0]}
             }}
         ])
@@ -69,17 +119,20 @@ Post.postQuery = function(operations) {
 
         // cleanup author object for each post object
         postArray = postArray.map(function(post) {
+            post.isVisitorTheAuthor = post.authorId.equals(visitorId)
             post.author = {
                 username: post.author.username,
                 avatar: new User(post.author, true).avatar
             }
             return post
         })
+
+        // console.log(postArray)
         resolve(postArray)
     })
 }
 
-Post.findById = function(id) {
+Post.findById = function(id, visitorId) {
     return new Promise(async (resolve, reject) => {
         if (typeof(id) != "string" || !ObjectID.isValid(id)) {
             reject()
@@ -88,7 +141,7 @@ Post.findById = function(id) {
         
         let postArray = await Post.postQuery([
             {$match: {_id: new ObjectID(id)}}
-        ])
+        ], visitorId)
 
         if (postArray.length) {
             resolve(postArray[0])
@@ -98,12 +151,12 @@ Post.findById = function(id) {
     })
 }
 
-Post.findByAuthorId = function(authorId) {
+Post.findByAuthorId = function(authorId, visitorId) {
     return Post.postQuery([
         {$match: {author: authorId}},
         // sort in descending order (-1)
         {$sort: {createdDate: -1}}
-    ])
+    ], visitorId)
 }
 
 module.exports = Post

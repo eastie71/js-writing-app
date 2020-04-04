@@ -68,7 +68,7 @@ exports.home = function(req, res) {
         // attempted to login and failed - the flash package will automatically REMOVE
         // "loginErrors" data after accessing it.
         // Same goes for "regErrors"
-        res.render('home-guest', {generalErrors: req.flash('generalErrors'), regErrors: req.flash('regErrors')})
+        res.render('home-guest', {regErrors: req.flash('regErrors')})
     }
 }
 
@@ -84,7 +84,7 @@ exports.checkUserExists = function(req, res, next) {
 // This method relies on checkUserExists method
 exports.profilePostsScreen = function(req, res) {
     // Ask the post model for posts by a particular author id
-    Post.findByAuthorId(req.profileUser._id).then(function(posts) {
+    Post.findByAuthorId(req.profileUser._id, req.visitorId).then(function(posts) {
         res.render('profile', {
             posts: posts,
             profileUsername: req.profileUser.username,
