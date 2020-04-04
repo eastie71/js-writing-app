@@ -2,6 +2,7 @@ const express = require('express')
 const session1 = require('express-session')
 const MongoStore = require('connect-mongo')(session1)
 const flash = require('connect-flash')
+const markdown = require('marked')
 const app = express()
 
 // BOILERPLATE CODE for Session package
@@ -19,6 +20,11 @@ app.use(sessionOptions)
 app.use(flash())
 
 app.use(function(req, res, next) {
+    // Make markdown function available across all ejs templates
+    res.locals.filterUserEnteredHTML = function(content) {
+        return markdown(content)
+    }
+
     // Make all general errors and success flash messages available from every ejs view templates
     res.locals.generalErrors = req.flash("generalErrors")
     res.locals.successMessages = req.flash("successMessages")

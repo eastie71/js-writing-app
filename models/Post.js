@@ -2,6 +2,7 @@ const postsCollection = require('../db').db().collection("posts")
 // Special ObjectID type required for MongoDB IDs
 const ObjectID = require('mongodb').ObjectID
 const User = require('./User')
+const sanitizeHTML = require('sanitize-html')
 
 let Post = function(data, userid, requestPostId) {
     this.data = data
@@ -18,10 +19,11 @@ Post.prototype.cleanUpData = function() {
         this.data.body = ""
     }
     // Get rid of any rubbish properties in the data, and remove spaces
+    // Also remove ANY HTML from within the title and body.
     // Also used to add on additional properties required
     this.data = {
-        title: this.data.title.trim(),
-        body: this.data.body.trim(),
+        title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),
+        body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
         createdDate: new Date(),
         author: ObjectID(this.userid)
     }

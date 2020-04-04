@@ -7,7 +7,7 @@ exports.createScreen = function(req, res) {
 exports.editScreen = async function(req, res) {
     try {
         let post = await Post.findById(req.params.id, req.visitorId)
-        if (post.authorId == req.visitorId) {
+        if (post.isVisitorTheAuthor) {
             res.render('edit-post', {post: post})
         } else {
             req.flash("generalErrors", "Permission denied.")
