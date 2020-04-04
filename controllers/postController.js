@@ -62,6 +62,17 @@ exports.update = function(req, res) {
     })
 }
 
+exports.delete = function(req, res) {
+    Post.delete(req.params.id, req.visitorId).then(function() {
+        req.flash("successMessages", "Post deleted.")
+        // Redirect to Authors Profile page after delete
+        req.session.save(() => res.redirect(`/profile/${req.session.user.username}`))
+    }).catch(function() {
+        req.flash("generalErrors", "Permission denied.")
+        req.session.save(() => res.redirect("/"))
+    })
+}
+
 exports.viewSingle = async function(req, res) {
     try {
         let post = await Post.findById(req.params.id, req.visitorId)

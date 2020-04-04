@@ -104,6 +104,24 @@ Post.prototype.performUpdate = function() {
     })
 }
 
+Post.delete = function(idToDelete, currentUserId) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let post = await Post.findById(idToDelete, currentUserId)
+            if (post.isVisitorTheAuthor) {
+                // As this call to delete is in a try-catch block, if it fails
+                // it will fall to the catch section below (hence reject)
+                await postsCollection.deleteOne({_id: new ObjectID(idToDelete)})
+                resolve()
+            } else {
+                reject()
+            }
+        } catch {
+            reject()
+        }
+    })
+}
+
 Post.postQuery = function(operations, visitorId) {
     return new Promise(async (resolve, reject) => {
         // Join the operations passed in for the aggregate method call
