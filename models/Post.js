@@ -140,6 +140,9 @@ Post.postQuery = function(operations, visitorId) {
         // cleanup author object for each post object
         postArray = postArray.map(function(post) {
             post.isVisitorTheAuthor = post.authorId.equals(visitorId)
+            // remove the authorID - its not needed to be exposed
+            post.authorId = undefined
+            
             post.author = {
                 username: post.author.username,
                 avatar: new User(post.author, true).avatar
@@ -177,6 +180,21 @@ Post.findByAuthorId = function(authorId, visitorId) {
         // sort in descending order (-1)
         {$sort: {createdDate: -1}}
     ], visitorId)
+}
+
+Post.search = function(searchTerm) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof(searchTerm) == "string") {
+            // sort by search score (or relevancy to search string)
+            let posts = await Post.postQuery([
+                {$match: {$text: {$search: searchTerm}}},
+                {$sort: {score: {$meta: "textScore"}}}
+            ])
+            resolve(posts)
+        } else {
+            reject()
+        }
+    })
 }
 
 module.exports = Post

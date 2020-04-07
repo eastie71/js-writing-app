@@ -13,6 +13,8 @@ router.post('/logout', userController.logout)
 router.get('/profile/:username', userController.checkUserExists, userController.profilePostsScreen)
 
 // post related routes
+router.post('/search', postController.search)
+
 // express router calls methods from left to right and you use "next()" move to the next method
 router.get('/create-post', userController.checkLoggedIn, postController.createScreen)
 router.post('/create-post', userController.checkLoggedIn, postController.create)

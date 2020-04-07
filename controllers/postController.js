@@ -73,6 +73,14 @@ exports.delete = function(req, res) {
     })
 }
 
+exports.search = function(req, res) {
+    Post.search(req.body.searchTerm).then(foundPosts => {
+        res.json(foundPosts)
+    }).catch(() => {
+        res.json([])
+    })
+}
+
 exports.viewSingle = async function(req, res) {
     try {
         let post = await Post.findById(req.params.id, req.visitorId)
