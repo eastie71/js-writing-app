@@ -1,5 +1,19 @@
 const User = require('../models/User')
 const Post = require('../models/Post')
+const Follow = require('../models/Follow')
+
+exports.sharedProfileData = async function(req, res, next) {
+    let isVisitorsOwnProfile = false
+    let isFollowing = false
+
+    if (req.session.user) {
+        isVisitorsOwnProfile = req.profileUser._id.equals(req.session.user._id)
+        isFollowing = await Follow.isVisitorFollowing(req.profileUser._id, req.visitorId)
+    }
+    req.isVisitorsOwnProfile = isVisitorsOwnProfile
+    req.isFollowing = isFollowing
+    next()
+}
 
 exports.checkLoggedIn = function(req, res, next) {
     if (req.session.user) {
@@ -81,14 +95,16 @@ exports.checkUserExists = function(req, res, next) {
     })
 }
 
-// This method relies on checkUserExists method
+// This method relies on checkUserExists and sharedProfileData methods
 exports.profilePostsScreen = function(req, res) {
     // Ask the post model for posts by a particular author id
     Post.findByAuthorId(req.profileUser._id, req.visitorId).then(function(posts) {
         res.render('profile', {
             posts: posts,
             profileUsername: req.profileUser.username,
-            profileAvatar: req.profileUser.avatar
+            profileAvatar: req.profileUser.avatar,
+            isFollowing: req.isFollowing,
+            isVisitorsOwnProfile: req.isVisitorsOwnProfile
         })
     }).catch(function() {
         res.render('404')
