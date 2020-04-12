@@ -1,4 +1,5 @@
 const postsCollection = require('../db').db().collection("posts")
+const followsCollection = require('../db').db().collection("follows")
 // Special ObjectID type required for MongoDB IDs
 const ObjectID = require('mongodb').ObjectID
 const User = require('./User')
@@ -206,6 +207,30 @@ Post.countPostsByAuthorId = function(id) {
             reject()
         }
     })
+}
+
+Post.getUsersFeed = function(id) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // create array of user ids the current user is following
+            let followedUsers = await followsCollection.find({forUserId: ObjectID(id)}).toArray()
+            followedUsers = followedUsers.map(function(followedUser) {
+                return followedUser.followId
+            })
+            // console.log(followedUsers)
+            // look for all the posts from the users being followed (above array)
+            posts = await Post.postQuery([
+                {$match: {author: {$in: followedUsers}}},
+                {$sort: {createdDate: -1}}
+            ])
+            // console.log(posts)
+            resolve(posts)
+        } catch {
+            reject()
+        }
+        
+    })
+    
 }
 
 module.exports = Post

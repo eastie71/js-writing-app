@@ -84,10 +84,12 @@ exports.register = function(req, res) {
     })
 }
 
-exports.home = function(req, res) {
+exports.home = async function(req, res) {
     // If the "user" object exists on the session, then we must be logged in
     if (req.session.user) { 
-        res.render('home-dashboard')
+        // fetch the feed of posts for the current user
+        let posts = await Post.getUsersFeed(req.session.user._id)
+        res.render('home-dashboard', {posts: posts})
     } else {
         // Here we leverage the flash package - accessing the "flash" object that contains 
         // "loginErrors" data if a user
