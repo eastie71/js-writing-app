@@ -12,6 +12,18 @@ exports.sharedProfileData = async function(req, res, next) {
     }
     req.isVisitorsOwnProfile = isVisitorsOwnProfile
     req.isFollowing = isFollowing
+    // Retrieve Counts for Posts, Followers and Following
+    // All calls to retrieve the counts are independent - ie. dont rely on one another
+    // Therefore each call can return a Promise and we can await ALL of their results using Promise.all
+    // As they will all return a number, and Promise.all will return an array of these numbers we can 
+    // use the "Array destructure" feature to get the counts into separate count variables
+    let postCountPromise = Post.countPostsByAuthorId(req.profileUser._id)
+    let followerCountPromise = Follow.countFollowersByAuthorId(req.profileUser._id)
+    let followingCountPromise = Follow.countFollowingByAuthorId(req.profileUser._id)
+    let [postCount, followerCount, followingCount] = await Promise.all([postCountPromise, followerCountPromise, followingCountPromise])
+    req.postCount = postCount
+    req.followerCount = followerCount
+    req.followingCount = followingCount
     next()
 }
 
@@ -100,6 +112,10 @@ exports.profilePostsScreen = function(req, res) {
     // Ask the post model for posts by a particular author id
     Post.findByAuthorId(req.profileUser._id, req.visitorId).then(function(posts) {
         res.render('profile', {
+            postCount: req.postCount,
+            followerCount: req.followerCount,
+            followingCount: req.followingCount,
+            currentTab: "posts",
             posts: posts,
             profileUsername: req.profileUser.username,
             profileAvatar: req.profileUser.avatar,
@@ -110,4 +126,45 @@ exports.profilePostsScreen = function(req, res) {
         res.render('404')
     })
     
+}
+
+// This method relies on checkUserExists and sharedProfileData methods
+exports.profileFollowingScreen = function(req, res) {
+    // Ask the follow model for follows of a particular author id
+    Follow.findFollowingByAuthorId(req.profileUser._id).then(function(follows) {
+        res.render('profile-following', {
+            postCount: req.postCount,
+            followerCount: req.followerCount,
+            followingCount: req.followingCount,
+            currentTab: "following",
+            follows: follows,
+            profileUsername: req.profileUser.username,
+            profileAvatar: req.profileUser.avatar,
+            isFollowing: req.isFollowing,
+            isVisitorsOwnProfile: req.isVisitorsOwnProfile
+        })
+    }).catch(function() {
+        res.render('404')
+    })
+    
+}
+
+// This method relies on checkUserExists and sharedProfileData methods
+exports.profileFollowersScreen = function(req, res) {
+    // Ask the follow model for followers of a particular author id
+    Follow.findFollowersByAuthorId(req.profileUser._id).then(function(followers) {
+        res.render('profile-followers', {
+            postCount: req.postCount,
+            followerCount: req.followerCount,
+            followingCount: req.followingCount,
+            currentTab: "followers",
+            followers: followers,
+            profileUsername: req.profileUser.username,
+            profileAvatar: req.profileUser.avatar,
+            isFollowing: req.isFollowing,
+            isVisitorsOwnProfile: req.isVisitorsOwnProfile
+        })
+    }).catch(function() {
+        res.render('404')
+    })
 }

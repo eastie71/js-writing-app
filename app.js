@@ -26,6 +26,7 @@ app.use(function(req, res, next) {
     }
 
     // Make all general errors and success flash messages available from every ejs view templates
+    // Access as "generalErrors" and "successMessages" variables
     res.locals.generalErrors = req.flash("generalErrors")
     res.locals.successMessages = req.flash("successMessages")
 
@@ -37,7 +38,7 @@ app.use(function(req, res, next) {
         req.visitorId = 0
     }
 
-    // Setup global access to session user data from every ejs view templates
+    // Setup global access to session user data from every ejs view templates (access as "user" variable)
     res.locals.user = req.session.user
     next()
 })
