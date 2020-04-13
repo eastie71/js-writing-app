@@ -1,3 +1,4 @@
+const sanitizeHTML = require('sanitize-html')
 const express = require('express')
 const session1 = require('express-session')
 const MongoStore = require('connect-mongo')(session1)
@@ -63,6 +64,28 @@ app.use('/', router)
 // create a server that uses the express "app" as its handler
 const server = require('http').createServer(app)
 // add in the socket functionality to our "server"
-const io = require('socket.io')(server)
+const ioServer = require('socket.io')(server)
+
+// Needed by express-session package to integrate with socket-io package
+// It makes our express session data available from within the context of socket-io
+ioServer.use(function(socket, next) {
+    sessionOptions(socket.request, socket.request.res, next)
+})
+
+ioServer.on('connection', function(socket) {
+    // Only if the user is logged in we send chat messages
+    if (socket.request.session.user) {
+        let user = socket.request.session.user
+
+        // Sender needs to know their username and avatar
+        socket.emit('welcome', {username: user.username, avatar: user.avatar})
+
+        socket.on('chatMessageFromClient', function(data) {
+            // emit the event to ALL connected users - NOT including the sending user
+            socket.broadcast.emit('chatMessageFromClient', {message: sanitizeHTML(data.message, {allowedTags: [], allowedAttributes: {}}), 
+                                                            username: user.username, avatar: user.avatar})
+        })
+    }
+})
 
 module.exports = server

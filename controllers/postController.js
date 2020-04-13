@@ -1,14 +1,14 @@
 const Post = require('../models/Post')
 
 exports.createScreen = function(req, res) {
-    res.render('create-post')
+    res.render('create-post', {title: "Create Post"})
 }
 
 exports.editScreen = async function(req, res) {
     try {
         let post = await Post.findById(req.params.id, req.visitorId)
         if (post.isVisitorTheAuthor) {
-            res.render('edit-post', {post: post})
+            res.render('edit-post', {post: post, title: `Edit - ${post.title}`})
         } else {
             req.flash("generalErrors", "Permission denied.")
             req.session.save(() => res.redirect("/"))
@@ -84,7 +84,7 @@ exports.search = function(req, res) {
 exports.viewSingle = async function(req, res) {
     try {
         let post = await Post.findById(req.params.id, req.visitorId)
-        res.render('single-post-screen', {post: post})
+        res.render('single-post-screen', {post: post, title: post.title})
     } catch {
         res.render('404')
     }

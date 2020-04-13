@@ -89,14 +89,14 @@ exports.home = async function(req, res) {
     if (req.session.user) { 
         // fetch the feed of posts for the current user
         let posts = await Post.getUsersFeed(req.session.user._id)
-        res.render('home-dashboard', {posts: posts})
+        res.render('home-dashboard', {posts: posts, title: `${req.session.user.username}'s Latest Feed`})
     } else {
         // Here we leverage the flash package - accessing the "flash" object that contains 
         // "loginErrors" data if a user
         // attempted to login and failed - the flash package will automatically REMOVE
         // "loginErrors" data after accessing it.
         // Same goes for "regErrors"
-        res.render('home-guest', {regErrors: req.flash('regErrors')})
+        res.render('home-guest', {regErrors: req.flash('regErrors'), title: "Register or Sign In"})
     }
 }
 
@@ -114,6 +114,7 @@ exports.profilePostsScreen = function(req, res) {
     // Ask the post model for posts by a particular author id
     Post.findByAuthorId(req.profileUser._id, req.visitorId).then(function(posts) {
         res.render('profile', {
+            title: `${req.profileUser.username}'s Profile`,
             postCount: req.postCount,
             followerCount: req.followerCount,
             followingCount: req.followingCount,
@@ -135,6 +136,7 @@ exports.profileFollowingScreen = function(req, res) {
     // Ask the follow model for follows of a particular author id
     Follow.findFollowingByAuthorId(req.profileUser._id).then(function(follows) {
         res.render('profile-following', {
+            title: `${req.profileUser.username} is Following`,
             postCount: req.postCount,
             followerCount: req.followerCount,
             followingCount: req.followingCount,
@@ -156,6 +158,7 @@ exports.profileFollowersScreen = function(req, res) {
     // Ask the follow model for followers of a particular author id
     Follow.findFollowersByAuthorId(req.profileUser._id).then(function(followers) {
         res.render('profile-followers', {
+            title: `${req.profileUser.username}'s Followers`,
             postCount: req.postCount,
             followerCount: req.followerCount,
             followingCount: req.followingCount,
