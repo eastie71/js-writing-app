@@ -93,7 +93,7 @@ export default class Search {
 
     openSearchOverlay() {
         this.overlay.classList.add("search-overlay--visible")
-        // Focus set to the search input field. Apparently you need a timeout hear because initially the
+        // Focus set to the search input field. Apparently you need a timeout here because initially the
         // div this field lives in is not visable and some browsers need time to set the focus
         setTimeout(() => this.searchField.focus(), 50)
     }

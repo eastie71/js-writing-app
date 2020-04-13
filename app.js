@@ -60,4 +60,9 @@ app.set('view engine', 'ejs')
 
 app.use('/', router)
 
-module.exports = app
+// create a server that uses the express "app" as its handler
+const server = require('http').createServer(app)
+// add in the socket functionality to our "server"
+const io = require('socket.io')(server)
+
+module.exports = server
