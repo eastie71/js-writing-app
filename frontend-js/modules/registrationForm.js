@@ -2,6 +2,7 @@ import axios from 'axios'
 
 export default class RegistrationForm {
     constructor() {
+        this.form = document.querySelector("#registration-form")
         // Select all fields: for username, email and password
         this.allFields = document.querySelectorAll("#registration-form .form-control")
         this.insertValidationElements()
@@ -11,6 +12,9 @@ export default class RegistrationForm {
         this.email.previousValue = ""
         this.password = document.querySelector("#password-register")
         this.password.previousValue = ""
+        // Initialise flags for checking of fields uniqueness
+        this.username.isUnique = false
+        this.email.isUnique = false
         this.events()
     }
 
@@ -25,6 +29,27 @@ export default class RegistrationForm {
         this.password.addEventListener("keyup", () => {
             this.isValueDifferent(this.password, this.passwordHandler)
         })
+        // The "blur" event is triggered when changing fields
+        // if user quickly types an invalid char and then hits TAB - the above "keyup"
+        // listeners may not catch it in time.
+        this.username.addEventListener("blur", () => {
+            this.isValueDifferent(this.username, this.usernameHandler)
+        })
+        this.email.addEventListener("blur", () => {
+            this.isValueDifferent(this.email, this.emailHandler)
+        })
+        this.password.addEventListener("blur", () => {
+            this.isValueDifferent(this.password, this.passwordHandler)
+        })
+        this.form.addEventListener("submit", e => {
+            e.preventDefault()
+            this.formSubmitHandler()
+        })
+        this.form.addEventListener("submit", e => {
+            e.preventDefault()
+            this.formSubmitHandler()
+        })
+        
     }
 
     // Methods
@@ -57,7 +82,7 @@ export default class RegistrationForm {
     }
 
     usernameDelayValidate() {
-        if (this.username.value != "" && this.username.value.length < 3) {
+        if (this.username.value.length < 3) {
             this.showValidationError(this.username, "Usernames must be at least 3 characters long")
         }
 
@@ -119,7 +144,7 @@ export default class RegistrationForm {
     }
 
     passwordDelayValidate() {
-        if (this.password.value != "" && this.password.value.length < 8) {
+        if (this.password.value.length < 8) {
             this.showValidationError(this.password, "Passwords must be at least 8 characters long")
         }
     }
@@ -134,6 +159,21 @@ export default class RegistrationForm {
         el.nextElementSibling.innerHTML = message
         el.nextElementSibling.classList.add("liveValidateMessage--visible")
         el.errors = true
+    }
+
+    formSubmitHandler() {
+        // On form submit we can call all of our field validation methods
+        this.usernameImmediateValidate()
+        this.usernameDelayValidate()
+        this.emailDelayValidate()
+        this.passwordImmediateValidate()
+        this.passwordDelayValidate()
+
+        if (this.username.isUnique && !this.username.errors &&
+            this.email.isUnique && !this.email.errors &&
+            !this.password.errors) {
+            this.form.submit()
+        }
     }
 
     insertValidationElements() {
