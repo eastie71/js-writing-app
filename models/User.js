@@ -56,8 +56,8 @@ User.prototype.validate = function() {
         if (this.data.password.length > 0 && this.data.password.length < 8) {
             this.errors.push("Passwords must be at least 8 characters in length")
         }
-        if (this.data.password.length > 50) {
-            this.errors.push("Passwords must no more than 50 characters in length")
+        if (this.data.password.length > 30) {
+            this.errors.push("Passwords must no more than 30 characters in length")
         }
     
         // Only if username is valid then check to see if username is in use
@@ -134,6 +134,32 @@ User.findByUsername = function(username) {
                 _id: user.data._id, 
                 username: user.data.username,
  //             email: user.data.email,
+                avatar: user.avatar
+            }
+            // console.log(user)
+            if (user) {
+                resolve(user)
+            } else {
+                reject()
+            }
+        }).catch(function() {
+            reject()
+        })
+    })
+}
+
+User.findByEmail = function(email) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof(email) != "string") {
+            reject()
+            return
+        }
+        usersCollection.findOne({email: email}).then(function(user) {
+            user = new User(user, true)
+            user = {
+                _id: user.data._id, 
+                username: user.data.username,
+                email: user.data.email,
                 avatar: user.avatar
             }
             // console.log(user)

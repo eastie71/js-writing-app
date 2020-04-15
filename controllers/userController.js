@@ -109,6 +109,24 @@ exports.checkUserExists = function(req, res, next) {
     })
 }
 
+exports.checkUsernameExists = function(req, res) {
+    User.findByUsername(req.body.username).then(function() {
+        // Although findByUsername returns a user document - we dont need it and dont need to pass it here
+        res.json(true)
+    }).catch(function() {
+        res.json(false)
+    })
+}
+
+exports.checkEmailExists = function(req, res) {
+    User.findByEmail(req.body.email).then(function() {
+        // Although findByEmail returns a user document - we dont need it and dont need to pass it here
+        res.json(true)
+    }).catch(function() {
+        res.json(false)
+    })
+}
+
 // This method relies on checkUserExists and sharedProfileData methods
 exports.profilePostsScreen = function(req, res) {
     // Ask the post model for posts by a particular author id

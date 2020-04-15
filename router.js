@@ -9,6 +9,8 @@ router.get('/', userController.home)
 router.post('/register', userController.register)
 router.post('/login', userController.login)
 router.post('/logout', userController.logout)
+router.post('/checkUsernameExists', userController.checkUsernameExists)
+router.post('/checkEmailExists', userController.checkEmailExists)
 
 // profile related routes
 router.get('/profile/:username', userController.checkUserExists, userController.sharedProfileData, userController.profilePostsScreen)
@@ -17,6 +19,7 @@ router.get('/profile/:username/following', userController.checkUserExists, userC
 
 // post related routes
 router.post('/search', postController.search)
+
 // express router calls methods from left to right and you use "next()" move to the next method
 router.get('/create-post', userController.checkLoggedIn, postController.createScreen)
 router.post('/create-post', userController.checkLoggedIn, postController.create)
