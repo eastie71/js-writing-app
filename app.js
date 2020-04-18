@@ -4,6 +4,7 @@ const session1 = require('express-session')
 const MongoStore = require('connect-mongo')(session1)
 const flash = require('connect-flash')
 const markdown = require('marked')
+const csrf = require('csurf')
 const app = express()
 
 // BOILERPLATE CODE for Session package
@@ -59,7 +60,27 @@ app.set('views', 'views')
 // Set the Javascript template to be EJS
 app.set('view engine', 'ejs')
 
+// By using csrf (csurf package) - any requests to modify the state (such as post, put, delete) will require a token to be passed
+// Without the csrf token - the request is rejected and an error is thrown
+app.use(csrf())
+// Need to setup some middleware so that the CSRF token will be available within the HTML templates 
+app.use(function(req, res, next) {
+    res.locals.csrfToken = req.csrfToken()
+    next()
+})
 app.use('/', router)
+
+app.use(function(err, req, res, next) {
+    if (err) {
+        if (err.code == "EBADCSRFTOKEN") {
+            req.flash('generalErrors', "CROSS SITE REQUEST FORGERY DETECTED!")
+            req.session.save(() => res.redirect('/'))
+        } else {
+            req.flash('generalErrors', "Something went wrong... Please try again later...")
+            req.session.save(() => res.redirect('404'))
+        }
+    }
+})
 
 // create a server that uses the express "app" as its handler
 const server = require('http').createServer(app)

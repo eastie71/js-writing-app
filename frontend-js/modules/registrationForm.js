@@ -2,6 +2,8 @@ import axios from 'axios'
 
 export default class RegistrationForm {
     constructor() {
+        // Select the CSRF token value based on the imput fields name
+        this._csrf = document.querySelector('[name="_csrf"]').value
         this.form = document.querySelector("#registration-form")
         // Select all fields: for username, email and password
         this.allFields = document.querySelectorAll("#registration-form .form-control")
@@ -31,7 +33,7 @@ export default class RegistrationForm {
         })
         // The "blur" event is triggered when changing fields
         // if user quickly types an invalid char and then hits TAB - the above "keyup"
-        // listeners may not catch it in time.
+        // listeners may not catch it in time, so the blur event will catch it
         this.username.addEventListener("blur", () => {
             this.isValueDifferent(this.username, this.usernameHandler)
         })
@@ -87,7 +89,7 @@ export default class RegistrationForm {
         }
 
         if (!this.username.errors) {
-            axios.post("/checkUsernameExists", {username: this.username.value}).then((response) => {
+            axios.post("/checkUsernameExists", {_csrf: this._csrf, username: this.username.value}).then((response) => {
                 if (response.data) {
                     this.showValidationError(this.username, "Username has already been taken.")
                     this.username.isUnique = false
@@ -112,7 +114,7 @@ export default class RegistrationForm {
         }
 
         if (!this.email.errors) {
-            axios.post("/checkEmailExists", {email: this.email.value}).then((response) => {
+            axios.post("/checkEmailExists", {_csrf: this._csrf, email: this.email.value}).then((response) => {
                 if (response.data) {
                     this.showValidationError(this.email, "An account already exists with that email.")
                     this.email.isUnique = false

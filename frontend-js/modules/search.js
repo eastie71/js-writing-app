@@ -5,6 +5,9 @@ export default class Search {
     // 1. Select DOM elements and keep track of useful data
     constructor() {
         this.injectHTML()
+        // Select the CSRF token value based on the input fields name
+        this._csrf = document.querySelector('[name="_csrf"]').value
+        
         this.headerSearchIcon = document.querySelector('#search-icon')
         this.overlay = document.querySelector('.search-overlay')
         this.closeSearchIcon = document.querySelector('.close-live-search')
@@ -44,7 +47,7 @@ export default class Search {
     }
 
     searchRequest() {
-        axios.post('/search', {searchTerm: this.searchField.value}).then(response => {
+        axios.post('/search', {_csrf: this._csrf, searchTerm: this.searchField.value}).then(response => {
             // results here
             console.log(response.data)
             this.renderResultsHTML(response.data)
@@ -109,6 +112,7 @@ export default class Search {
                 <div class="container container--narrow">
                     <label for="live-search-field" class="search-overlay-icon"><i class="fas fa-search"></i></label>
                     <input type="text" id="live-search-field" class="live-search-field" placeholder="What are you interested in?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <span class="close-live-search"><i class="fas fa-times-circle"></i></span>
                 </div>
             </div>
