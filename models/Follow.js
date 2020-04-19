@@ -21,6 +21,7 @@ Follow.prototype.validate = async function(action) {
     let followAccount = await usersCollection.findOne({username: this.followUsername})
     if (followAccount) {
         this.followId = followAccount._id
+        this.followEmail = followAccount.email
     } else {
         this.errors.push(`Cannot find user "${this.followUsername}" to ${action == "add" ? "follow" : "unfollow"}`)
     }
