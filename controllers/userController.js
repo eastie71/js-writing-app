@@ -1,6 +1,7 @@
 const User = require('../models/User')
 const Post = require('../models/Post')
 const Follow = require('../models/Follow')
+const webToken = require('jsonwebtoken')
 
 exports.sharedProfileData = async function(req, res, next) {
     let isVisitorsOwnProfile = false
@@ -39,6 +40,18 @@ exports.checkLoggedIn = function(req, res, next) {
     }
 }
 
+exports.apiCheckLoggedIn = function(req, res, next) {
+    try {
+        // verify method will throw an error if an invalid token is passed in
+        // setup "apiUser" so its available in "next" method
+        req.apiUser = webToken.verify(req.body.token, process.env.WEBTOKENSECRET)
+        console.log(req.apiUser)
+        next()
+    } catch {
+        res.json("You must provide a valid token")
+    }
+}
+
 exports.login = function(req, res) {
     let user = new User(req.body)
     user.login().then(function(result) {
@@ -57,6 +70,15 @@ exports.login = function(req, res) {
             // Make sure the session has been saved with flash info before redirecting to homepage
             res.redirect('/')
         })
+    })
+}
+
+exports.apiLogin = function(req, res) {
+    let user = new User(req.body)
+    user.login().then(function(result) {
+        res.json(webToken.sign({_id: user.data._id}, process.env.WEBTOKENSECRET, {expiresIn: '7d'}))
+    }).catch(function(error) {
+        res.json(error)
     })
 }
 
@@ -116,6 +138,15 @@ exports.checkUsernameExists = function(req, res) {
     }).catch(function() {
         res.json(false)
     })
+}
+
+exports.apiCheckUsernameExists = async function(req, res, next) {
+    try {
+        req.authorDocument = await User.findByUsername(req.params.username)
+        next()
+    } catch {
+        res.json("Invalid Username requested.")
+    }
 }
 
 exports.checkEmailExists = function(req, res) {

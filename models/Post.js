@@ -137,7 +137,6 @@ Post.postQuery = function(operations, visitorId) {
             }}
         ])
         let postArray = await postsCollection.aggregate(aggOperations).toArray()
-
         // cleanup author object for each post object
         postArray = postArray.map(function(post) {
             post.isVisitorTheAuthor = post.authorId.equals(visitorId)
@@ -151,7 +150,7 @@ Post.postQuery = function(operations, visitorId) {
             return post
         })
 
-        // console.log(postArray)
+        //console.log(postArray)
         resolve(postArray)
     })
 }

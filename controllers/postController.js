@@ -33,6 +33,17 @@ exports.create = function(req, res) {
     })
 }
 
+exports.apiCreate = function(req, res) {
+    // req.body is the data here
+    let post = new Post(req.body, req.apiUser._id)
+    post.create().then(function(createdId) {
+        // Need to return the createdId here to the application
+        res.json("Create post successful")
+    }).catch(function(errors) {
+        res.json(errors)
+    })
+}
+
 exports.update = function(req, res) {
     // req.body is the data here
     let post = new Post(req.body, req.visitorId, req.params.id)
@@ -73,6 +84,15 @@ exports.delete = function(req, res) {
     })
 }
 
+exports.apiDelete = function (req, res) {
+    Post.delete(req.params.id, req.apiUser._id).then(function() {
+        // Need to return the createdId here to the application
+        res.json("Delete post successful")
+    }).catch(function() {
+        res.json("Delete post failed")
+    })
+}
+
 exports.search = function(req, res) {
     Post.search(req.body.searchTerm).then(foundPosts => {
         res.json(foundPosts)
@@ -88,4 +108,13 @@ exports.viewSingle = async function(req, res) {
     } catch {
         res.render('404')
     }
+}
+
+exports.apiGetPostsByUsername = function (req, res) {
+    // console.log(req.authorDocument)
+    Post.findByAuthorId(req.authorDocument._id).then((posts)=> {
+        res.json(posts)
+    }).catch(() => {
+        res.json("Posts request failed.")
+    })
 }

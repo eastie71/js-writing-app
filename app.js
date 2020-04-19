@@ -7,6 +7,16 @@ const markdown = require('marked')
 const csrf = require('csurf')
 const app = express()
 
+// BOILERPLATE CODE
+// Automatically take submitted form data and add to body object that lives on request object
+app.use(express.urlencoded({extended: false}))
+// Automatically add to body object for asyncronous requests
+app.use(express.json())
+
+// Setup the API router at the top of this file so avoid all other app.use includes
+// such as flash, errors, csrf, etc
+app.use('/api', require('./router-api'))
+
 // BOILERPLATE CODE for Session package
 let sessionOptions = session1({
     secret: "I dont think you will ever guess this!!",
@@ -46,12 +56,6 @@ app.use(function(req, res, next) {
 })
 
 const router = require('./router')
-
-// BOILERPLATE CODE
-// Automatically take submitted form data and add to body object that lives on request object
-app.use(express.urlencoded({extended: false}))
-// Automatically add to body object for asyncronous requests
-app.use(express.json())
 
 // Make the 'public' folder accessible by the browser
 app.use(express.static('public'))
