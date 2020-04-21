@@ -4,7 +4,7 @@
     <%- include('includes/flash') %>
     
     <% if (posts.length) { %>
-      <h2 class="text-center mb-4">Latest Posts from those you Follow</h2>
+      <h2 class="text-center mb-4">Latest From People You Follow</h2>
       <div class="list-group">
         <% posts.forEach(function(post) { %>
           <a href="/post/<%= post._id %>" class="list-group-item list-group-item-action">
