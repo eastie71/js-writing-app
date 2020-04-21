@@ -2,6 +2,8 @@ const User = require('../models/User')
 const Post = require('../models/Post')
 const Follow = require('../models/Follow')
 const webToken = require('jsonwebtoken')
+const sendgrid = require('@sendgrid/mail')
+sendgrid.setApiKey(process.env.SENDGRIDAPIKEY)
 
 exports.sharedProfileData = async function(req, res, next) {
     let isVisitorsOwnProfile = false
@@ -94,6 +96,49 @@ exports.register = function(req, res) {
     user.register().then(() => {
         // Successful register - so log the new user in.
         req.session.user = {avatar: user.avatar, username: user.data.username, _id: user.data._id}
+        try {
+            // Send a welcome email to the user just registered
+            sendgrid.send({
+                to: user.data.email,
+                from: process.env.FROMEMAIL,
+                subject: `Welcome to WriteApp ${user.data.username} !`,
+                text: 'Welcome to the WriteApp for you! Start Writing TODAY!',
+                html: `<p>Welcome, <strong>${user.data.username}</strong> to <strong><a href="${process.env.MAINURL}">WriteApp!</a></strong>, where you can rediscover the joy of writing again.</p>
+                        <p>Checkout our list of features</p>
+                        <ul>
+                            <li>Live <strong>Chat</strong> with fellow Writers.</li>
+                            <li><strong>Search</strong> for any Posts that interest you.</li>
+                            <li>Checkout the <strong>Profile</strong> and Posts of other Writers</li>
+                            <li>Choose to <strong>Follow</strong> Writers you like and see their Posts in your Feed.</li>
+                            <li>Have other Writers follow you back - and see who is following you!</li>
+                            <li>And of course, start Writing by creating your first Post</li>
+                            <li>For your Posts, feel free to use <strong>Markdown</strong> for Styling - see https://guides.github.com/features/mastering-markdown </li>
+                        </ul>
+                        <p>
+                            <button><a href="${process.env.MAINURL}/create-post" 
+                            style="background-color: #007bff;
+                                border: none;
+                                color: #111;
+                                padding: 15px 32px;
+                                text-align: center;
+                                text-decoration: none;
+                                display: inline-block;
+                                font-size: 16px;
+                                margin: 10px 12px;
+                                cursor: pointer;" 
+                            >CREATE YOUR FIRST POST</a></button>
+                        </p>
+                        <p>We really hope you enjoy using our App and we would love to hear from you.</p>
+                        <p>Have fun!</p>
+                        <p>Craig @ <strong><a href="${process.env.MAINURL}">WriteApp</a></p>`
+            })
+            console.log("Register email sent!")
+        } catch (error) {
+            console.log(error)
+            if (error.response) {
+                console.log(error.response.body)
+            }
+        }
     }).catch((regErrors) => {
         regErrors.forEach(function(error) {
             req.flash('regErrors', error)

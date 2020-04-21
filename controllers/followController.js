@@ -16,7 +16,7 @@ exports.add = function(req, res) {
                 subject: `${followerName} is now following you!`,
                 text: 'Keep up the great work! People are following you',
                 html: `<p>Congrats, <strong>${followerName}</strong> has started following you! Keep up the great work and more people will follow you!</p>
-                        <p>Perhaps you can follow ${followerName} back? :)</p><p>Here is a link to their Profile Page: <a href="${process.env.PROFILEURL}/${followerName}">${followerName}'s Profile</a></p>`
+                        <p>Perhaps you can follow ${followerName} back? :)</p><p>Here is a link to their Profile Page: <a href="${process.env.MAINURL}/profile/${followerName}">${followerName}'s Profile</a></p>`
             })
             // console.log("Follow email sent!")
         } catch (error) {
